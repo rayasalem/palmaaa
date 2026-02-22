@@ -77,3 +77,17 @@ VITE_SUPABASE_ANON_KEY=your_anon_key
    ```bash
    npm run build
    ```
+
+## Vercel Deployment
+
+This project is configured for [Vercel](https://vercel.com) (Vite + React).
+
+| Setting | Value |
+|--------|--------|
+| **Build Command** | `npm run build` |
+| **Output Directory** | `dist` |
+| **Root Directory** | Leave default (project at repo root) |
+| **Node.js Version** | `>=18` (set in `package.json` engines) |
+
+- Ensure **Environment Variables** are set in Vercel (e.g. `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) under Project → Settings → Environment Variables.
+- The repo's `vercel.json` already sets `outputDirectory`, `framework`, and SPA rewrites.

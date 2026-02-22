@@ -45,19 +45,7 @@ export const authService = {
             .single();
 
           if (profile) {
-             // Check if email verified
-             // const isVerified = (profile.email_verified === true) || (!!authUser.email_confirmed_at);
-
-             // if (!isVerified) {
-             //     await supabase.auth.signOut();
-             //     return { 
-             //       success: false, 
-             //       error: 'EMAIL_NOT_VERIFIED', 
-             //       requiresVerification: true,
-             //       data: { user: profile as unknown as User, token: '' } 
-             //     };
-             // }
-             
+             // Login allowed without email confirmation (admin and all users).
              // Check Approval Status
              if (profile.status === 'REJECTED') {
                  await supabase.auth.signOut();
@@ -89,5 +77,26 @@ export const authService = {
 
   getUserById(id: string): User | undefined {
     return db.users.find(u => u.id === id);
+  },
+
+  /**
+   * Request password reset (sends email via Supabase when configured).
+   */
+  async resetPassword(email: string): Promise<ActionResponse<unknown>> {
+    try {
+      if (supabase && isSupabaseConfigured) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`
+        });
+        if (error) {
+          return { success: false, error: error.message };
+        }
+        return { success: true, data: {} };
+      }
+      return { success: false, error: 'Password reset is not configured.' };
+    } catch (e: any) {
+      console.error('[Auth] Reset password error', e);
+      return { success: false, error: e.message || 'Reset failed' };
+    }
   }
 };

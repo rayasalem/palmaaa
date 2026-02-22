@@ -306,7 +306,8 @@ const AppContent: React.FC = () => {
   //   );
   // }
 
-  if ((user.status === 'PENDING' || user.status === 'REJECTED') && user.role !== 'ADMIN') {
+  // عرض انتظار الموافقة فقط للمرفوضين (أي يوزر جديد يدخل بدون موافقة الأدمن)
+  if (user.status === 'REJECTED' && user.role !== 'ADMIN') {
     return <PendingReview user={user} onLogout={handleLogout} lang={lang} />;
   }
 

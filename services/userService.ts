@@ -41,12 +41,13 @@ export const userService = {
         return { success: false, error: 'Registration failed to get user ID.' };
       }
 
-      // 2. Prepare Public User Record
+      // 2. Prepare Public User Record (دخول بدون موافقة الأدمن: أي يوزر جديد APPROVED)
       const newUser: User = {
         ...user,
         id: userId,
-        emailVerified: true, // Auto-verify for now
-        status: 'PENDING',
+        emailVerified: true,
+        status: 'APPROVED',
+        isApproved: true,
         createdAt: Date.now(),
         registration_date: new Date().toISOString(),
         companyName: extraData?.company_name || user.companyName,
@@ -56,7 +57,6 @@ export const userService = {
       };
 
       // 3. Upsert into Public Table (public.users)
-      // Use upsert to handle cases where Auth user exists but Public user might be missing or partial
       const payload: any = {
           id: newUser.id,
           email: newUser.email,
@@ -64,12 +64,13 @@ export const userService = {
           phone: newUser.phone,
           role: newUser.role,
           status: newUser.status,
-          is_approved: false,
+          is_approved: true,
           city: newUser.city,
           company_name: newUser.companyName,
-          email_verified: true, // Auto-verify for now
+          email_verified: true,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          approved_at: new Date().toISOString()
       };
 
       try {
@@ -113,11 +114,21 @@ export const userService = {
       // 5. Update Local Cache
       db.addItem('users', newUser);
 
-      // Return success indicating verification is required
+      // 6. Get session so user can stay logged in without email confirmation
+      let token = authData.session?.access_token ?? '';
+      if (!token && password) {
+        const { data: signInData } = await supabase.auth.signInWithPassword({
+          email: user.email,
+          password: password
+        });
+        token = signInData.session?.access_token ?? '';
+      }
+
+      // Success: user enters directly (no email verification step)
       return { 
         success: true, 
         requiresVerification: false,
-        data: { user: newUser, token: '' } 
+        data: { user: newUser, token } 
       };
 
     } catch (e: any) {

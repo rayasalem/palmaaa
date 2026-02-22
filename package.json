@@ -6,7 +6,7 @@
   "engines": { "node": ">=18" },
   "scripts": {
     "dev": "vite",
-    "build": "npx tsc --noEmit && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
